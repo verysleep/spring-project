@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
+<script type="text/javascript">
+let xml = "<List><SampleDTO><name>홍길동</name><age>10</age></SampleDTO><SampleDTO><name>임지호</name><age>23</age></SampleDTO></List>";
+
+// #dataTable  위 xml 데이터로 table tag를 만들어서 넣어보기 
+$(function(){
+	
+	let data = $.parseXML(xml);
+	
+	let table = $('<table></table>');
+	let headerRow = $('<tr></tr>');
+	
+	headerRow.append('<th>name</th>');
+	headerRow.append('<th>age</th>');
+	table.append(headerRow);
+	
+	$(data).find('SampleDTO').each(function() {
+		let name = $(this).find('name').text();
+        let age = $(this).find('age').text();
+		let row = $('<tr>');
+		row.append('<td>' + name + '</td>');
+		row.append('<td>' + age + '</td>');
+		row.append('</tr>');
+		table.append(row);
+	})
+	
+	$('#dataTable').append(table);
+	
+});
+
+</script>
+
+</head>
+<body>
+<h1>use XML</h1>
+<div id="dataTable">
+</div>
+</body>
+</html>

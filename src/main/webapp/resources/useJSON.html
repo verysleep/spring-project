@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
+<script type="text/javascript">
+
+$(function(){
+	let json = '[{"SampleDTO":{"name":"홍길동","age":10}},{"SampleDTO":{"name":"관리자","age":30}}]';
+	// #dataTable  위 xml 데이터로 table tag를 만들어서 넣어보기 
+	
+	let data = JSON.parse(json);
+	
+	let table = $('<table></table>');
+	let headerRow = $('<tr></tr>');
+	
+	headerRow.append('<th>name</th>');
+	headerRow.append('<th>age</th>');
+	table.append(headerRow);
+	
+	data.forEach(function(item) {
+		let row = $('<tr></tr>');
+		row.append('<td>' + item.SampleDTO.name + '</td>');
+		row.append('<td>' + item.SampleDTO.age + '</td>');
+		table.append(row);
+	});
+	
+	$('#dataTable').append(table);
+	
+});
+
+</script>
+
+</head>
+<body>
+<h1>use JSON</h1>
+<div id="dataTable">
+</div>
+</body>
+</html>
