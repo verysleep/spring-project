@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.zerock.member.mapper.MemberMapper">
+	
+	<!-- 회원관리 리스트 -->
+	<select id="list" resultType="org.zerock.board.vo.BoardVO">
+		select no, title, writer, writeDate, hit
+		from (
+			select rownum rnum, no, title, writer, writeDate, hit
+			from (
+				select no, title, writer, writeDate, hit 
+				from board
+				<!-- 검색 달기 -->
+				<include refid="search" />
+				order by no desc
+			)
+		)
+		where rnum between #{startRow} and #{endRow}
+	</select>
+	
+	<!-- 회원관리 전체 데이터 개수 가져오기 -->
+	<select id="getTotalRow" resultType="Long">
+		select count(*)
+		from board
+		<!-- 검색 달기 -->
+		<include refid="search" />
+	</select>
+	
+	<!-- 회원관리 리스트의 검색 처리 -->
+	<sql id="search">
+		<if test="word != null and word != ''.toString()">
+			where 
+			<!-- trim prefixOverrides="or" : 맨 앞의 or를 제거해라 -->
+			<trim prefixOverrides="or">
+				<!-- 'test' : 문자열(String) // 't': 문자(char) > 문자열로 바꾸기 - toString() 사용 -->
+				<if test="key.indexOf('t') >= 0">
+					or title like '%' || #{word}  || '%'
+				</if>
+				<if test="key.indexOf('c') >= 0">
+					or content like '%' || #{word}  || '%'
+				</if>
+				<if test="key.indexOf('w') >= 0">
+					or writer like '%' || #{word}  || '%'
+				</if>
+			</trim>
+		</if>
+	</sql>
+	
+	<!-- 글보기 조회수 1증가 -->
+	<!-- #{obj} 1. 변수의 이름, 2. vo 의 getter 이름, 3. Map 의 key -->
+	<update id="increase">
+		update board set hit = hit + 1 where no = #{no}
+	</update>
+	
+	<!-- 글보기 -->
+	<select id="view" resultType="org.zerock.board.vo.BoardVO">
+		select no, title, content, writer, writeDate, hit 
+		from board 
+		where no = #{no}
+	</select>
+	
+	<!-- 글등록 -->
+<!-- 	<insert id="write"> -->
+<!-- 		insert into board(no, title, content, writer, pw) -->
+<!-- 		values(board_seq.nextval, #{title}, #{content}, #{writer}, #{pw}) -->
+<!-- 	</insert> -->
+
+	<insert id="write">
+		<!-- 먼저 BoardVO의 no에 setter를 이용해서 시퀀스에서 받아온 번호를 세팅해준다. -->
+		<selectKey keyProperty="no" resultType="Long" order="BEFORE">
+			select board_seq.nextval from dual
+		</selectKey>
+		insert into board(no, title, content, writer, pw)
+		values(#{no}, #{title}, #{content}, #{writer}, #{pw})
+	</insert>
+	
+	<!-- 트랜잭션 처리 테스트를 위한 쿼리 - 같은 no의 데이터를 등록 시도 -->
+	<!-- 
+		<insert id="writeTx">
+			insert into board(no, title, content, writer, pw)
+			values(#{no}, #{title}, #{content}, #{writer}, #{pw})
+		</insert>
+	 -->
+	 
+	<!-- 회원정보 수정 -->
+	<update id="update">
+		<![CDATA[
+			update board 
+			set title = #{title}, content = #{content}, writer = #{writer}
+			where no = #{no} and pw = #{pw}
+		]]>
+	</update>
+	
+	<!-- 회원 탈퇴 -->
+	<delete id="delete">
+		delete from board 
+		where no = #{no} and pw = #{pw}
+	</delete>
+	
+	<select id="login" resultType="org.zerock.member.vo.LoginVO">
+		select m.id, m.name, m.photo, m.newMsgCnt, m.gradeNo, g.gradeName
+		from member m, grade g
+		where (id = #{id} and pw = #{pw}) and (m.gradeNo = g.gradeNo)
+	</select>
+	
+</mapper>
